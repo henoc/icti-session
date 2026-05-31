@@ -3,6 +3,7 @@ const ROWS = 20;
 const BLOCK = 30;
 const SESSION_SECONDS = 20 * 60;
 const RECALL_SECONDS = 10;
+const ROTATION_ANIMATION_MS = 140;
 
 const COLORS = {
   I: "#4cc9f0",
@@ -54,7 +55,8 @@ const state = {
   sessionRemaining: SESSION_SECONDS,
   sessionStartedAt: null,
   timerId: null,
-  recallId: null
+  recallId: null,
+  rotationAnimation: null
 };
 
 function createBoard() {
@@ -219,8 +221,17 @@ function rotatePiece() {
   const kicks = [0, -1, 1, -2, 2];
   for (const kick of kicks) {
     if (!collides(state.piece, kick, 0, rotated)) {
+      const previous = {
+        matrix: state.piece.matrix.map((row) => row.slice()),
+        x: state.piece.x,
+        y: state.piece.y,
+        type: state.piece.type,
+        startedAt: performance.now(),
+        duration: ROTATION_ANIMATION_MS
+      };
       state.piece.x += kick;
       state.piece.matrix = rotated;
+      state.rotationAnimation = previous;
       draw();
       return;
     }
@@ -241,6 +252,33 @@ function drawMatrix(ctx, matrix, offsetX, offsetY, type, size = BLOCK) {
       if (value) drawCell(ctx, x + offsetX, y + offsetY, COLORS[type], size);
     });
   });
+}
+
+function drawRotatingMatrix(ctx, animation, progress) {
+  const size = BLOCK;
+  const matrix = animation.matrix;
+  const occupied = [];
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) occupied.push({ x, y });
+    });
+  });
+  const centerX = (animation.x + matrix[0].length / 2) * size;
+  const centerY = (animation.y + matrix.length / 2) * size;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, 1 - progress * 0.55);
+  ctx.translate(centerX, centerY);
+  ctx.rotate((Math.PI / 2) * progress);
+  occupied.forEach(({ x, y }) => {
+    const localX = (x - matrix[0].length / 2) * size;
+    const localY = (y - matrix.length / 2) * size;
+    ctx.fillStyle = COLORS[animation.type];
+    ctx.fillRect(localX, localY, size, size);
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(localX + 1, localY + 1, size - 2, size - 2);
+  });
+  ctx.restore();
 }
 
 function draw() {
@@ -267,6 +305,12 @@ function draw() {
     });
   });
   if (state.piece) drawMatrix(boardCtx, state.piece.matrix, state.piece.x, state.piece.y, state.piece.type);
+  if (state.rotationAnimation) {
+    const elapsed = performance.now() - state.rotationAnimation.startedAt;
+    const progress = Math.min(1, elapsed / state.rotationAnimation.duration);
+    drawRotatingMatrix(boardCtx, state.rotationAnimation, progress);
+    if (progress >= 1) state.rotationAnimation = null;
+  }
   drawNext();
 }
 
@@ -396,7 +440,7 @@ document.querySelectorAll("[data-control]").forEach((button) => {
     if (action === "rotate") rotatePiece();
     if (action === "drop") hardDrop();
     updateStats();
-    draw();
+    if (action !== "rotate") draw();
   });
 });
 
