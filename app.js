@@ -179,6 +179,7 @@ function restartBoard() {
   state.piece = choosePiece();
   state.nextPiece = choosePiece();
   state.dropCounter = 0;
+  state.dropInterval = 820;
   state.restarts += 1;
   updateStats();
   draw();
