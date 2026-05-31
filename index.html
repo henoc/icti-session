@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>ICTI Session</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="session-panel" aria-labelledby="app-title">
+        <header class="topbar">
+          <div>
+            <p class="kicker">Imagery Competing Task</p>
+            <h1 id="app-title">ICTI セッション</h1>
+          </div>
+          <button id="resetBtn" class="icon-button ghost" type="button" title="最初に戻る" aria-label="最初に戻る">↺</button>
+        </header>
+
+        <div class="progress" aria-label="進行状況">
+          <span class="progress-dot active" data-step-dot="recall"></span>
+          <span class="progress-dot" data-step-dot="rating"></span>
+          <span class="progress-dot" data-step-dot="game"></span>
+          <span class="progress-dot" data-step-dot="done"></span>
+        </div>
+
+        <section id="recallView" class="view active" data-step="recall">
+          <div class="focus-clock" id="recallClock">00:10</div>
+          <h2>ひとつのイメージを短く浮かべる</h2>
+          <p class="lead">対象にする場面をひとつだけ選び、画像として数秒だけ思い浮かべます。強くつらくなる時は中止してください。</p>
+          <div class="action-row">
+            <button id="beginRecallBtn" class="primary" type="button">▶ 開始</button>
+            <button id="skipRecallBtn" class="secondary" type="button">→ 評価へ</button>
+          </div>
+        </section>
+
+        <section id="ratingView" class="view" data-step="rating">
+          <h2>鮮明さ</h2>
+          <p class="lead">いま浮かべた画像の鮮明さを選びます。</p>
+          <div class="rating-grid" role="radiogroup" aria-label="鮮明さ">
+            <button class="rating-btn" type="button" data-rating="1">1<span>ぼんやり</span></button>
+            <button class="rating-btn" type="button" data-rating="2">2<span>やや薄い</span></button>
+            <button class="rating-btn" type="button" data-rating="3">3<span>中くらい</span></button>
+            <button class="rating-btn" type="button" data-rating="4">4<span>はっきり</span></button>
+            <button class="rating-btn" type="button" data-rating="5">5<span>非常に鮮明</span></button>
+          </div>
+          <div class="rotation-cue">
+            <strong>次の課題</strong>
+            <span>ブロックを落とす前に、どの向きに回すかを頭の中で一瞬だけ回転させて予測します。</span>
+          </div>
+          <div class="action-row">
+            <button id="startGameBtn" class="primary" type="button" disabled>▶ 20分開始</button>
+          </div>
+        </section>
+
+        <section id="gameView" class="view game-view" data-step="game">
+          <div class="task-cue game-cue">
+            <strong>回転を予測</strong>
+            <span>置く前に、頭の中でブロックを回してから操作します。</span>
+            <span class="mobile-hud">残り <b id="mobileTimer">20:00</b> / スコア <b id="mobileScore">0</b> / 再開 <b id="mobileRestarts">0</b></span>
+          </div>
+          <div class="game-layout">
+            <div class="board-wrap">
+              <canvas id="board" width="300" height="600" aria-label="ブロック回転課題"></canvas>
+              <div id="pauseOverlay" class="pause-overlay hidden">一時停止</div>
+            </div>
+            <aside class="game-sidebar">
+              <div class="metric">
+                <span>残り</span>
+                <strong id="sessionTimer">20:00</strong>
+              </div>
+              <div class="metric">
+                <span>スコア</span>
+                <strong id="score">0</strong>
+              </div>
+              <div class="metric">
+                <span>ライン</span>
+                <strong id="lines">0</strong>
+              </div>
+              <div class="metric">
+                <span>リスタート</span>
+                <strong id="restarts">0</strong>
+              </div>
+              <div class="next-box">
+                <span>次</span>
+                <canvas id="next" width="96" height="96" aria-label="次のブロック"></canvas>
+              </div>
+              <div class="control-pad" aria-label="操作">
+                <button type="button" data-control="rotate" title="回転" aria-label="回転">⟳</button>
+                <button type="button" data-control="left" title="左" aria-label="左">←</button>
+                <button type="button" data-control="down" title="下" aria-label="下">↓</button>
+                <button type="button" data-control="right" title="右" aria-label="右">→</button>
+                <button type="button" data-control="drop" title="落下" aria-label="落下">⤓</button>
+              </div>
+              <div class="action-stack">
+                <button id="pauseBtn" class="secondary" type="button">Ⅱ 一時停止</button>
+                <button id="finishBtn" class="danger" type="button">■ 終了</button>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="doneView" class="view" data-step="done">
+          <h2>終了</h2>
+          <p class="lead">セッションを記録しました。</p>
+          <dl class="summary">
+            <div><dt>鮮明さ</dt><dd id="summaryRating">-</dd></div>
+            <div><dt>実施時間</dt><dd id="summaryDuration">-</dd></div>
+            <div><dt>スコア</dt><dd id="summaryScore">0</dd></div>
+          </dl>
+          <div class="action-row">
+            <button id="newSessionBtn" class="primary" type="button">↺ もう一度</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
